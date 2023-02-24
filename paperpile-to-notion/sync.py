@@ -67,6 +67,8 @@ if __name__ == "__main__":
         e[PRIMARY_KEY]: page_id for e, page_id in zip(notion_entries, notion_page_ids)
     }
 
+    print('Updating pages ...')
+
     # Insert or update missing pages
 
     for bib_e in bib_entries:
@@ -93,3 +95,13 @@ if __name__ == "__main__":
 
         if response_ok is False:
             print(response_text)
+
+    print('Removing outdated pages ...')
+
+    # Flag duplicates?
+
+    print('Updating Google Drive PDF links ...')
+
+    # Use https://github.com/iterative/PyDrive2
+
+    print('Completed.')
