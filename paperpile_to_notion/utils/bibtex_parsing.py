@@ -9,7 +9,6 @@ def rebuild_name(name):
     name = " ".join(name)
     return name
 
-
 def parser_customizations(record):
     record = convert_to_unicode(record)
     record = author(record)
@@ -17,7 +16,3 @@ def parser_customizations(record):
         author_list = [rebuild_name(name) for name in record["author"]]
         record["author"] = ", ".join(author_list)
     return record
-
-
-def bibtex_to_content_dict(entry, property_keys):
-    return {k: entry.get(v, "") for k, v in property_keys.items()}

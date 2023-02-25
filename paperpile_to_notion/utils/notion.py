@@ -46,27 +46,22 @@ def update_page(db_id, properties, update_page_id=None, headers=None):
     return response.ok, response.text
 
 
-def page_to_entry(page, property_types):
-    content_dict = {}
-
-    for k, prop_type in property_types.items():
-        p = page["properties"][k]
-        if prop_type == "title":
-            content = p["title"][0]["text"]["content"]
-        elif prop_type == "rich_text":
-            content = p["rich_text"][0]["text"]["content"]
-        elif prop_type == "number":
-            content = p["number"]
-        elif prop_type == "url":
-            content = p["url"]
-        else:
-            content = ""
-        content_dict[k] = content
-
-    return content_dict
+def get_property(page, prop_name, prop_type):
+    p = page["properties"][prop_name]
+    if prop_type == "title":
+        content = p["title"][0]["text"]["content"]
+    elif prop_type == "rich_text":
+        content = p["rich_text"][0]["text"]["content"]
+    elif prop_type == "number":
+        content = p["number"]
+    elif prop_type == "url":
+        content = p["url"]
+    else:
+        content = ""
+    return content
 
 
-def string_to_property_value(property_type, content):
+def property_to_value(property_type, content):
     if property_type == "title":
         return {
             "title": [{
@@ -85,10 +80,3 @@ def string_to_property_value(property_type, content):
     elif property_type == "url":
         return {property_type: content}
     return {property_type: content}
-
-
-def entry_to_properties(entry, property_types):
-    return {
-        name: string_to_property_value(property_types[name], content)
-        for name, content in entry.items()
-    }

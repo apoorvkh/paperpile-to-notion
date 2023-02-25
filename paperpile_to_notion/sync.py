@@ -1,4 +1,6 @@
 import os
+import csv
+
 import bibtexparser
 from bibtexparser.bparser import BibTexParser
 
@@ -11,63 +13,59 @@ DATABASE_IDENTIFIER = os.environ["DATABASE_IDENTIFIER"]
 
 ## User customizations
 
-BIB_PATH = "references.bib"
+BIB_PATH = "../references.bib"
+CFG_PATH = "../data_config.csv"
 
 TITLE_KEY = "Title"
 PRIMARY_KEY = "Reference ID"
 
-# Notion column names : Notion property types
-notion_property_types = {
-    "Title": "title",
-    "Authors": "rich_text",
-    "Year": "rich_text",
-    "Reference ID": "rich_text",
-    "Link": "url",
-}
-
-# Notion column names : Bibtex property keys
-notion_property_keys = {
-    "Title": "title",
-    "Authors": "author",
-    "Year": "year",
-    "Reference ID": "ID",
-    "Link": "url",
-}
-
 ## Main
 
 if __name__ == "__main__":
+    print(f"Loading config from {CFG_PATH} ...")
+
+    with open(CFG_PATH, "r") as csvfile:
+        reader = csv.DictReader(csvfile)
+        data_config = list(reader)
 
     print(f"Parsing {BIB_PATH} ...")
 
-    parser = BibTexParser(
-        customization=bibtex_parsing.parser_customizations,
-        ignore_nonstandard_types=False,
+    bib_database = bibtexparser.load(
+        open(BIB_PATH, "r"),
+        parser=BibTexParser(
+            customization=bibtex_parsing.parser_customizations,
+            ignore_nonstandard_types=False,
+        ),
     )
 
-    bib_database = bibtexparser.load(open(BIB_PATH), parser=parser)
     bib_entries = [
-        bibtex_parsing.bibtex_to_content_dict(e, notion_property_keys)
-        for e in bib_database.entries
+        {c["notion_property"]: b.get(c["bibtex_field"], "") for c in data_config}
+        for b in bib_database.entries
     ]
 
     print("Querying Notion DB ...")
 
     notion_headers = notion.get_headers(NOTION_TOKEN)
-
     notion_pages = notion.query_db(db_id=DATABASE_IDENTIFIER, headers=notion_headers)
 
     notion_page_ids = [page["id"] for page in notion_pages]
+
     notion_entries = [
-        notion.page_to_entry(page, property_types=notion_property_types)
+        {
+            c["notion_property"]: notion.get_property(
+                page, c["notion_property"], c["property_type"]
+            )
+            for c in data_config
+        }
         for page in notion_pages
     ]
+
     notion_entries_by_pkey = {e[PRIMARY_KEY]: e for e in notion_entries}
     notion_page_ids_by_pkey = {
-        e[PRIMARY_KEY]: page_id for e, page_id in zip(notion_entries, notion_page_ids)
+        e[PRIMARY_KEY]: pid for e, pid in zip(notion_entries, notion_page_ids)
     }
 
-    print('Updating pages ...')
+    print("Updating pages ...")
 
     # Insert or update missing pages
 
@@ -84,7 +82,12 @@ if __name__ == "__main__":
         print("Updating" if notion_page_id else "Adding", end="")
         print(f' page for paper "{bib_e[TITLE_KEY]}"')
 
-        properties = notion.entry_to_properties(bib_e, notion_property_types)
+        properties = {
+            c["notion_property"]: notion.property_to_value(
+                property_type=c["property_type"], content=bib_e[c["notion_property"]]
+            )
+            for c in data_config
+        }
 
         response_ok, response_text = notion.update_page(
             db_id=DATABASE_IDENTIFIER,
@@ -96,12 +99,12 @@ if __name__ == "__main__":
         if response_ok is False:
             print(response_text)
 
-    print('Removing outdated pages ...')
+    print("Removing outdated pages ...")
 
     # Flag duplicates?
 
-    print('Updating Google Drive PDF links ...')
+    print("Updating Google Drive PDF links ...")
 
     # Use https://github.com/iterative/PyDrive2
 
-    print('Completed.')
+    print("Completed.")
