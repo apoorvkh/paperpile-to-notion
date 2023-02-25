@@ -8,7 +8,7 @@ import utils.bibtex_parsing as bibtex_parsing
 import utils.notion as notion
 
 
-NOTION_TOKEN = os.environ["NOTION_TOKEN"]
+NOTION_HEADERS = notion.get_headers(os.environ["NOTION_TOKEN"])
 DATABASE_IDENTIFIER = os.environ["DATABASE_IDENTIFIER"]
 
 ## User customizations
@@ -43,12 +43,11 @@ if __name__ == "__main__":
         for b in bib_database.entries
     ]
 
+    bib_pkeys = set(e[PRIMARY_KEY] for e in bib_entries)
+
     print("Querying Notion DB ...")
 
-    notion_headers = notion.get_headers(NOTION_TOKEN)
-    notion_pages = notion.query_db(db_id=DATABASE_IDENTIFIER, headers=notion_headers)
-
-    notion_page_ids = [page["id"] for page in notion_pages]
+    notion_pages = notion.query_db(db_id=DATABASE_IDENTIFIER, headers=NOTION_HEADERS)
 
     notion_entries = [
         {
@@ -61,6 +60,8 @@ if __name__ == "__main__":
     ]
 
     notion_entries_by_pkey = {e[PRIMARY_KEY]: e for e in notion_entries}
+
+    notion_page_ids = [page["id"] for page in notion_pages]
     notion_page_ids_by_pkey = {
         e[PRIMARY_KEY]: pid for e, pid in zip(notion_entries, notion_page_ids)
     }
@@ -93,7 +94,7 @@ if __name__ == "__main__":
             db_id=DATABASE_IDENTIFIER,
             properties=properties,
             update_page_id=notion_page_id,
-            headers=notion_headers,
+            headers=NOTION_HEADERS,
         )
 
         if response_ok is False:
@@ -101,7 +102,12 @@ if __name__ == "__main__":
 
     print("Removing outdated pages ...")
 
-    # Flag duplicates?
+    # for entry in notion_entries:
+    #     pkey = entry[PRIMARY_KEY]
+    #     if pkey not in bib_pkeys:
+    #         page_id = notion_page_ids_by_pkey[pkey]
+    #         if page_id is blank:
+    #             remove page_id
 
     print("Updating Google Drive PDF links ...")
 
