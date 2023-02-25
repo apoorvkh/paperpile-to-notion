@@ -14,4 +14,9 @@ setup(
     ],
     description="Python tool for syncing your Paperpile library with Notion database.",
     packages=find_packages(),
+    entry_points = {
+        "console_scripts": [
+            "paperpile_to_notion = paperpile_to_notion.__main__:main",
+        ]
+    }
 )
