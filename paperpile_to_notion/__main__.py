@@ -35,7 +35,7 @@ def main():
     )
 
     bib_entries = [
-        {c["notion_property"]: b.get(c["bibtex_field"], "") for c in data_config}
+        {c["notion_property"]: b.get(c["bibtex_field"], "")[:notion.CHAR_LIMIT] for c in data_config}
         for b in bib_database.entries
     ]
 

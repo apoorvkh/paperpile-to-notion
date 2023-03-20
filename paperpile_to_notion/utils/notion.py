@@ -2,6 +2,7 @@ import requests
 
 
 NOTION_API_BASE_URL = "https://api.notion.com/v1"
+CHAR_LIMIT=2000
 
 
 def get_headers(notion_token):
