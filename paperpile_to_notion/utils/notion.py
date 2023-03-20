@@ -25,6 +25,8 @@ def query_db(db_id, headers=None):
         pages += response["results"]
         payload["start_cursor"] = response["next_cursor"]
 
+    pages = [p for p in pages if p['archived'] is False]
+
     return pages
 
 
@@ -44,6 +46,21 @@ def update_page(db_id, properties, update_page_id=None, headers=None):
         response = requests.post(url, json=payload, headers=headers, timeout=60)
 
     return response.ok, response.text
+
+
+def archive_page(page_id, headers=None):
+    payload = {
+        "archived": True
+    }
+    url = f"{NOTION_API_BASE_URL}/pages/{page_id}"
+    response = requests.patch(url, json=payload, headers=headers, timeout=60)
+    return response.ok, response.text
+
+
+def is_blank_page(page_id, headers=None):
+    url = f"{NOTION_API_BASE_URL}/blocks/{page_id}/children"
+    response = requests.get(url, headers=headers, timeout=60).json()
+    return len(response['results']) == 0
 
 
 def get_property(page, prop_name, prop_type):

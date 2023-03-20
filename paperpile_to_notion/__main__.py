@@ -96,12 +96,14 @@ def main():
 
     print("Removing outdated pages ...")
 
-    # for entry in notion_entries:
-    #     pkey = entry[PRIMARY_KEY]
-    #     if pkey not in bib_pkeys:
-    #         page_id = notion_page_ids_by_pkey[pkey]
-    #         if page_id is blank:
-    #             remove page_id
+    for entry in notion_entries:
+        pkey = entry[PRIMARY_KEY]
+        if pkey not in bib_pkeys:
+            page_id = notion_page_ids_by_pkey[pkey]
+            if notion.is_blank_page(page_id, headers=NOTION_HEADERS):
+                print(f'Removing "{entry[TITLE_KEY]}"')
+                notion.archive_page(page_id, headers=NOTION_HEADERS)
+            # Else update title...
 
     print("Updating Google Drive PDF links ...")
 
