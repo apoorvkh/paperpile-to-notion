@@ -1,0 +1,6 @@
+notion_property,property_type,bibtex_field
+Reference ID,title,ID
+Title,rich_text,title
+Authors,rich_text,author
+Year,rich_text,year
+Link,url,url
