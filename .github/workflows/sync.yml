@@ -21,7 +21,8 @@ jobs:
           #cache-dependency-path: setup.py
 
       - name: Install dependencies
-        run: pip install git+https://github.com/apoorvkh/paperpile-to-notion.git@build
+        # Installs from github:apoorvkh/paperpile-to-notion@build
+        run: pip install git+https://github.com/apoorvkh/paperpile-to-notion.git@98f013ecadd5e0d811644571eaf6c723db931622
 
       - name: Run sync script
         run: python -m paperpile_to_notion
