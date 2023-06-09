@@ -11,6 +11,8 @@ To use, please (1) fork or template this repo, and (2) follow the instructions a
 "Year": rich_text
 ```
 
+Please also make sure to delete any blank rows from your Notion database!
+
 My Paperpile BibTeX settings are as follows:
 
 <img width="588" alt="image" src="https://github.com/apoorvkh/paperpile-to-notion/assets/7005565/d3e807c9-21fb-4761-bab0-824df20c36e2">
