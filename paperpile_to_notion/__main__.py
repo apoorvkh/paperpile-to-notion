@@ -45,19 +45,26 @@ def main():
 
     notion_pages = notion.query_db(db_id=DATABASE_IDENTIFIER, headers=NOTION_HEADERS)
 
-    notion_entries = [
-        {
-            c["notion_property"]: notion.get_property(
-                page, c["notion_property"], c["property_type"]
+    notion_entries = []
+    notion_page_ids = []
+
+    for page in notion_pages:
+        try:
+            notion_entries.append(
+                {
+                    c["notion_property"]: notion.get_property(
+                        page, c["notion_property"], c["property_type"]
+                    )
+                    for c in data_config
+                }
             )
-            for c in data_config
-        }
-        for page in notion_pages
-    ]
+            notion_page_ids.append(
+                page["id"]
+            )
+        except:
+            pass
 
     notion_entries_by_pkey = {e[PRIMARY_KEY]: e for e in notion_entries}
-
-    notion_page_ids = [page["id"] for page in notion_pages]
     notion_page_ids_by_pkey = {
         e[PRIMARY_KEY]: pid for e, pid in zip(notion_entries, notion_page_ids)
     }
